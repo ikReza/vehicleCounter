@@ -5,10 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Dimensions
+  Dimensions,
 } from "react-native";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
+import * as XLSX from "xlsx";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const buttonWidth = width / 2.5;
 const buttonHeight = width / 4.5;
 
@@ -41,6 +44,22 @@ const VehicleCounter: React.FC = () => {
     );
   };
 
+  const shareCounts = async () => {
+    const data = vehicleTypes.map((type) => ({
+      Vehicle: type.name,
+      Count: counts[type.name],
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Vehicle Count");
+    const wbout = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
+    const uri = FileSystem.cacheDirectory + "VehicleCount.xlsx";
+    await FileSystem.writeAsStringAsync(uri, wbout, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    await Sharing.shareAsync(uri);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Vehicle Counter</Text>
@@ -58,9 +77,14 @@ const VehicleCounter: React.FC = () => {
           </TouchableOpacity>
         )}
       />
-      <TouchableOpacity style={styles.resetButton} onPress={resetCounts}>
-        <Text style={styles.resetButtonText}>Reset</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.resetButton} onPress={resetCounts}>
+          <Text style={styles.resetButtonText}>Reset</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.shareButton} onPress={shareCounts}>
+          <Text style={styles.shareButtonText}>Share</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.footer}>© Ibrahim Kaiser 2025</Text>
     </View>
   );
@@ -104,13 +128,32 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
   },
+  buttonRow: {
+    flexDirection: "row",
+    marginTop: 20,
+    marginBottom: 30,
+  },
   resetButton: {
+    width: buttonWidth,
+    alignItems: "center",
     backgroundColor: "red",
     padding: 15,
     borderRadius: 10,
-    marginTop: 20,
+    marginRight: 10,
   },
   resetButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  shareButton: {
+    width: buttonWidth,
+    alignItems: "center",
+    backgroundColor: "blue",
+    padding: 15,
+    borderRadius: 10,
+  },
+  shareButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
