@@ -1,74 +1,127 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Dimensions
+} from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const { width } = Dimensions.get('window');
+const buttonWidth = width / 2.5;
+const buttonHeight = width / 4.5;
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+const VehicleCounter: React.FC = () => {
+  const vehicleTypes: { name: string; icon: string }[] = [
+    { name: "Rickshaw", icon: "🦽" },
+    { name: "Bicycle", icon: "🚲" },
+    { name: "Motorcycle", icon: "🏍" },
+    { name: "CNG", icon: "🛺" },
+    { name: "Bus", icon: "🚌" },
+    { name: "Car", icon: "🚗" },
+    { name: "Microbus", icon: "🚐" },
+    { name: "Truck", icon: "🚚" },
+  ];
+
+  const [counts, setCounts] = useState<Record<string, number>>(
+    vehicleTypes.reduce((acc, type) => ({ ...acc, [type.name]: 0 }), {})
   );
-}
+
+  const incrementCount = (type: string) => {
+    setCounts((prevCounts) => ({
+      ...prevCounts,
+      [type]: prevCounts[type] + 1,
+    }));
+  };
+
+  const resetCounts = () => {
+    setCounts(
+      vehicleTypes.reduce((acc, type) => ({ ...acc, [type.name]: 0 }), {})
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Vehicle Counter</Text>
+      <FlatList
+        data={vehicleTypes}
+        keyExtractor={(item) => item.name}
+        numColumns={2}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => incrementCount(item.name)}
+          >
+            <Text style={styles.iconText}>{`${item.icon} ${item.name}`}</Text>
+            <Text style={styles.countText}>{counts[item.name]}</Text>
+          </TouchableOpacity>
+        )}
+      />
+      <TouchableOpacity style={styles.resetButton} onPress={resetCounts}>
+        <Text style={styles.resetButtonText}>Reset</Text>
+      </TouchableOpacity>
+      <Text style={styles.footer}>© Ibrahim Kaiser 2025</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#f4f4f4",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 30,
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  button: {
+    width: buttonWidth,
+    height: buttonHeight,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 10,
+    padding: 10,
+    margin: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  iconText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  countText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  resetButton: {
+    backgroundColor: "red",
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  resetButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  footer: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    fontSize: 10,
+    fontStyle: "italic",
   },
 });
+
+export default VehicleCounter;
