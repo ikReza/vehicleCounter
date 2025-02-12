@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
   FlatList,
   Dimensions,
+  Alert,
 } from "react-native";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
@@ -31,6 +33,15 @@ const VehicleCounter: React.FC = () => {
     vehicleTypes.reduce((acc, type) => ({ ...acc, [type.name]: 0 }), {})
   );
 
+  const [value, setValue] = useState("");
+
+  const showAlert = () => {
+    Alert.alert(
+      "Information",
+      "This app is made by Ibrahim Kaiser during MRT Line-1 CS project."
+    );
+  };
+
   const incrementCount = (type: string) => {
     setCounts((prevCounts) => ({
       ...prevCounts,
@@ -45,6 +56,11 @@ const VehicleCounter: React.FC = () => {
   };
 
   const shareCounts = async () => {
+    if (!value.trim()) {
+      Alert.alert("Warning", "Please enter a file name.");
+      return; // Exit the function if the input field is empty
+    }
+
     const data = vehicleTypes.map((type) => ({
       Vehicle: type.name,
       Count: counts[type.name],
@@ -53,7 +69,7 @@ const VehicleCounter: React.FC = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Vehicle Count");
     const wbout = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
-    const uri = FileSystem.cacheDirectory + "VehicleCount.xlsx";
+    const uri = FileSystem.cacheDirectory + `${value}.xlsx`;
     await FileSystem.writeAsStringAsync(uri, wbout, {
       encoding: FileSystem.EncodingType.Base64,
     });
@@ -77,6 +93,13 @@ const VehicleCounter: React.FC = () => {
           </TouchableOpacity>
         )}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="write file name"
+        placeholderTextColor="#888"
+        value={value}
+        onChangeText={setValue}
+      />
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.resetButton} onPress={resetCounts}>
           <Text style={styles.resetButtonText}>Reset</Text>
@@ -86,6 +109,9 @@ const VehicleCounter: React.FC = () => {
         </TouchableOpacity>
       </View>
       <Text style={styles.footer}>© Ibrahim Kaiser 2025</Text>
+      <TouchableOpacity style={styles.infoButton} onPress={showAlert}>
+        <Text style={styles.infoButtonText}>ⓘ</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -96,18 +122,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#e2d8db",
   },
   title: {
+    color: "#ff6347",
+    backgroundColor: "#223333",
     fontSize: 24,
     fontWeight: "bold",
     marginTop: 30,
     marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    elevation: 5, // Shadow for Android
+    shadowColor: "#000", // Shadow for iOS
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
   button: {
     width: buttonWidth,
     height: buttonHeight,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#1E1E1E",
     borderRadius: 10,
     padding: 10,
     margin: 10,
@@ -119,43 +155,79 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   iconText: {
+    color: "#FFF",
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
   },
   countText: {
+    color: "#D2B48C",
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 10,
   },
+  input: {
+    width: "90%",
+    height: 50,
+    backgroundColor: "#E0E0E0", // Same as container to blend
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 30,
+    borderRadius: 12,
+    fontSize: 16,
+    color: "#333",
+    textAlign: "left",
+    borderWidth: 2, // Outline effect
+    borderColor: "#C0C0C0", // Soft gray outline
+    shadowColor: "#FFF", // Light top-left shadow
+    shadowOffset: { width: -2, height: -2 },
+    shadowOpacity: 1,
+    shadowRadius: 5,
+  },
   buttonRow: {
     flexDirection: "row",
-    marginTop: 20,
-    marginBottom: 30,
+    marginTop: 10,
+    marginBottom: 40,
   },
   resetButton: {
     width: buttonWidth,
     alignItems: "center",
-    backgroundColor: "red",
+    backgroundColor: "#FF5F1F",
     padding: 15,
     borderRadius: 10,
     marginRight: 10,
   },
   resetButtonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
   shareButton: {
     width: buttonWidth,
     alignItems: "center",
-    backgroundColor: "blue",
+    backgroundColor: "#4682b4",
     padding: 15,
     borderRadius: 10,
   },
   shareButtonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  infoButton: {
+    position: "absolute",
+    bottom: 10,
+    left: 20,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    backgroundColor: "#eed202",
+    borderRadius: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  infoButtonText: {
+    fontSize: 12,
+    color: "black",
     fontWeight: "bold",
   },
   footer: {
