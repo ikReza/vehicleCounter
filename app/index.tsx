@@ -38,7 +38,7 @@ const VehicleCounter: React.FC = () => {
   const showAlert = () => {
     Alert.alert(
       "Information",
-      "This app is made by Ibrahim Kaiser during MRT Line-1 CS project."
+      "This app is made during Dhaka MRT Line-1 CS project."
     );
   };
 
