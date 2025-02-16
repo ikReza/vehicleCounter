@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -34,12 +34,19 @@ const Home: React.FC = () => {
   );
 
   const [value, setValue] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [time, setTime] = useState(0); // Time in milliseconds
 
-  const showAlert = () => {
-    Alert.alert(
-      "Information",
-      "This app is made during Dhaka MRT Line-1 CS project."
-    );
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start Stopwatch when any vehicle button is pressed
+  const startStopwatch = () => {
+    if (!isRunning) {
+      setIsRunning(true);
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 10); // Update every 10ms
+      }, 10); // Ensure correct type casting
+    }
   };
 
   const incrementCount = (type: string) => {
@@ -47,12 +54,32 @@ const Home: React.FC = () => {
       ...prevCounts,
       [type]: prevCounts[type] + 1,
     }));
+    startStopwatch();
   };
 
   const resetCounts = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setIsRunning(false);
+    setTime(0);
     setCounts(
       vehicleTypes.reduce((acc, type) => ({ ...acc, [type.name]: 0 }), {})
     );
+  };
+
+  // Format time as HH:MM:SS:MS
+  const formatTime = (milliseconds: number) => {
+    const ms = milliseconds % 1000;
+    const seconds = Math.floor((milliseconds / 1000) % 60);
+    const minutes = Math.floor((milliseconds / (1000 * 60)) % 60);
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")}:${String(ms).padStart(3, "0")}`;
   };
 
   const shareCounts = async () => {
@@ -78,7 +105,7 @@ const Home: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Vehicle Counter</Text>
+      <Text style={styles.title}>⏰ {formatTime(time)}</Text>
       <FlatList
         data={vehicleTypes}
         keyExtractor={(item) => item.name}
@@ -123,12 +150,14 @@ const styles = StyleSheet.create({
   title: {
     color: "#ff6347",
     backgroundColor: "#223333",
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontFamily: "poppins-bold",
     marginTop: 30,
     marginBottom: 20,
     paddingVertical: 10,
     paddingHorizontal: 30,
+    width: "80%",
+    textAlign: "center",
     borderRadius: 8,
     elevation: 5, // Shadow for Android
     shadowColor: "#000", // Shadow for iOS
@@ -153,14 +182,14 @@ const styles = StyleSheet.create({
   iconText: {
     color: "#FFF",
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "poppins-bold",
     marginTop: 10,
   },
   countText: {
     color: "#D2B48C",
     fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 10,
+    fontFamily: "poppins-bold",
+    marginTop: 4,
   },
   input: {
     width: "90%",
@@ -189,26 +218,26 @@ const styles = StyleSheet.create({
     width: buttonWidth,
     alignItems: "center",
     backgroundColor: "#FF5F1F",
-    padding: 15,
+    padding: 14,
     borderRadius: 10,
     marginRight: 10,
   },
   resetButtonText: {
     color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontFamily: "poppins-bold",
   },
   shareButton: {
     width: buttonWidth,
     alignItems: "center",
     backgroundColor: "#4682b4",
-    padding: 15,
+    padding: 14,
     borderRadius: 10,
   },
   shareButtonText: {
     color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontFamily: "poppins-bold",
   },
 });
 
